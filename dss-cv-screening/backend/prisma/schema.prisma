@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model untuk Bobot Kriteria
+model Bobot {
+  id                  String   @id @default(cuid())
+  nama_kriteria       String   @unique // pendidikan, pengalaman, skill_analisis, sertifikasi
+  bobot               Float    @default(0.25) // Default 25%
+  jenis_kriteria      String   @default("benefit") // benefit atau cost
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("bobots")
+}
+
+// Model untuk Kandidat
+model Kandidat {
+  id                  String   @id @default(cuid())
+  nama                String
+  posisi_yang_dicari  String   // Accountant, Finance Staff, Marketing
+  email               String   @unique
+  nomor_telepon       String?
+  
+  // Kriteria
+  pendidikan          Float    @default(0) // 0-100
+  pengalaman          Float    @default(0) // 0-100
+  skill_analisis      Float    @default(0) // 0-100
+  sertifikasi         Float    @default(0) // 0-100
+  
+  // Hasil SAW
+  nilai_akhir         Float?   @default(0)
+  ranking             Int?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("kandidats")
+}
