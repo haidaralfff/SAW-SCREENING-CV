@@ -22,7 +22,6 @@ const props = defineProps<Props>();
 
 const chartData = computed(() => {
   const data = props.rankingResults.slice(0, 10);
-  const maxVal = Math.max(...data.map(r => r.nilai_akhir));
   
   return {
     labels: data.map(r => r.nama),
@@ -30,16 +29,16 @@ const chartData = computed(() => {
       {
         label: 'Skor SAW',
         data: data.map(r => parseFloat(r.nilai_akhir.toFixed(3))),
-        backgroundColor: data.map((r, i) =>
+        backgroundColor: data.map((_, i) =>
           i === 0 ? 'rgba(16, 185, 129, 0.85)' : 'rgba(51, 65, 85, 0.9)'
         ),
-        borderColor: data.map((r, i) =>
+        borderColor: data.map((_, i) =>
           i === 0 ? '#10b981' : '#475569'
         ),
         borderWidth: 1,
         borderRadius: 6,
         borderSkipped: false,
-        hoverBackgroundColor: data.map((r, i) =>
+        hoverBackgroundColor: data.map((_, i) =>
           i === 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(71, 85, 105, 1)'
         ),
       },
