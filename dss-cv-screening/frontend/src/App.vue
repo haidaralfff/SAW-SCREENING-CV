@@ -4,7 +4,7 @@ import apiService from './services/api';
 import DashboardStats from './components/DashboardStats.vue';
 import KandidatView from './components/KandidatView.vue';
 import RankingView from './components/RankingView.vue';
-import { Kandidat, RankingResult, Bobot } from './types';
+import type { Kandidat, RankingResult, Bobot } from './types';
 
 type ActiveTab = 'dashboard' | 'kandidat' | 'ranking';
 
@@ -68,194 +68,223 @@ const handleCalculateRanking = async () => {
 
 const pageTitle = computed(() => {
   switch (activeTab.value) {
-    case 'dashboard':
-      return 'Dashboard';
-    case 'kandidat':
-      return 'Manajemen Kandidat';
-    case 'ranking':
-      return 'Hasil Ranking';
-    default:
-      return 'DSS CV Screening';
+    case 'dashboard': return 'Dashboard Overview';
+    case 'kandidat': return 'Manajemen Kandidat';
+    case 'ranking': return 'Hasil Ranking SAW';
+    default: return 'DSS CV Screening';
   }
 });
+
+const pageSubtitle = computed(() => {
+  switch (activeTab.value) {
+    case 'dashboard': return 'Analitik & ringkasan data kandidat';
+    case 'kandidat': return 'Kelola data kandidat CV';
+    case 'ranking': return 'Perankingan menggunakan metode SAW';
+    default: return '';
+  }
+});
+
+const navItems = [
+  {
+    key: 'dashboard' as ActiveTab,
+    label: 'Dashboard',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>`,
+  },
+  {
+    key: 'kandidat' as ActiveTab,
+    label: 'Kandidat',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
+  },
+  {
+    key: 'ranking' as ActiveTab,
+    label: 'Ranking',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>`,
+  },
+];
 </script>
 
 <template>
-  <div class="flex h-screen bg-slate-900">
+  <div class="flex h-screen bg-slate-900 overflow-hidden">
+
     <!-- Sidebar -->
-    <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
-      <div class="p-6 border-b border-slate-700">
-        <h1 class="text-2xl font-bold text-emerald-500">DSS</h1>
-        <p class="text-xs text-slate-400 mt-1">CV Screening System</p>
+    <aside
+      :class="[
+        'sidebar flex flex-col bg-slate-800 border-r border-slate-700/60 shrink-0 z-20 transition-all duration-300 ease-in-out',
+        sidebarOpen ? 'w-64' : 'w-16'
+      ]"
+    >
+      <!-- Logo -->
+      <div class="flex items-center gap-3 px-4 py-5 border-b border-slate-700/60 min-h-[72px]">
+        <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          </svg>
+        </div>
+        <transition name="fade-slide">
+          <div v-if="sidebarOpen" class="overflow-hidden">
+            <p class="text-sm font-bold text-slate-100 whitespace-nowrap">DSS CV Screening</p>
+            <p class="text-xs text-slate-500 whitespace-nowrap">SAW Method</p>
+          </div>
+        </transition>
       </div>
 
-      <nav class="flex-1 p-6">
-        <div class="space-y-2">
-          <button
-            @click="activeTab = 'dashboard'"
-            :class="['nav-item', { active: activeTab === 'dashboard' }]"
-          >
-            <span class="icon">📊</span>
-            <span>Dashboard</span>
-          </button>
-          <button
-            @click="activeTab = 'kandidat'"
-            :class="['nav-item', { active: activeTab === 'kandidat' }]"
-          >
-            <span class="icon">👥</span>
-            <span>Kandidat</span>
-          </button>
-          <button
-            @click="activeTab = 'ranking'"
-            :class="['nav-item', { active: activeTab === 'ranking' }]"
-          >
-            <span class="icon">🏆</span>
-            <span>Ranking</span>
-          </button>
-        </div>
+      <!-- Navigation -->
+      <nav class="flex-1 px-2 py-4 space-y-1">
+        <p v-if="sidebarOpen" class="px-3 mb-3 text-[10px] font-semibold tracking-widest text-slate-500 uppercase">Menu Utama</p>
+        <button
+          v-for="item in navItems"
+          :key="item.key"
+          @click="activeTab = item.key"
+          :class="[
+            'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group relative',
+            activeTab === item.key
+              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+          ]"
+        >
+          <span class="shrink-0" v-html="item.icon"></span>
+          <transition name="fade-slide">
+            <span v-if="sidebarOpen" class="whitespace-nowrap">{{ item.label }}</span>
+          </transition>
+          <!-- Active indicator -->
+          <span
+            v-if="activeTab === item.key"
+            class="absolute right-2 w-1.5 h-1.5 rounded-full bg-emerald-400"
+          ></span>
+          <!-- Tooltip for collapsed -->
+          <span
+            v-if="!sidebarOpen"
+            class="absolute left-full ml-2 px-2 py-1 text-xs font-medium text-slate-200 bg-slate-700 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity duration-150 shadow-lg z-50"
+          >{{ item.label }}</span>
+        </button>
       </nav>
 
-      <div class="p-6 border-t border-slate-700">
-        <p class="text-xs text-slate-400">© 2026 DSS System</p>
+      <!-- Footer -->
+      <div class="px-4 py-4 border-t border-slate-700/60">
+        <transition name="fade-slide">
+          <p v-if="sidebarOpen" class="text-[11px] text-slate-500 text-center">© 2026 DSS System</p>
+        </transition>
       </div>
-    </div>
+    </aside>
 
     <!-- Main Content -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
       <!-- Top Navbar -->
-      <div class="navbar">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-4">
-            <button
-              @click="sidebarOpen = !sidebarOpen"
-              class="text-slate-400 hover:text-emerald-500 transition-colors"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <h2 class="text-xl font-bold text-slate-100">{{ pageTitle }}</h2>
-          </div>
-          <div class="flex items-center gap-4">
-            <button
-              @click="handleRefresh"
-              class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm font-medium transition-colors"
-            >
-              🔄 Refresh
-            </button>
+      <header class="flex items-center justify-between px-6 bg-slate-800/80 backdrop-blur-sm border-b border-slate-700/60 h-[72px] shrink-0">
+        <div class="flex items-center gap-4">
+          <!-- Toggle Sidebar -->
+          <button
+            @click="sidebarOpen = !sidebarOpen"
+            class="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 transition-all duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <!-- Breadcrumb -->
+          <div>
+            <h1 class="text-base font-bold text-slate-100 leading-tight">{{ pageTitle }}</h1>
+            <p class="text-xs text-slate-500">{{ pageSubtitle }}</p>
           </div>
         </div>
-      </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Refresh button -->
+          <button
+            @click="handleRefresh"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-emerald-400 hover:bg-slate-700/60 border border-slate-700/60 hover:border-emerald-500/30 transition-all duration-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="hidden sm:inline">Refresh</span>
+          </button>
+
+          <!-- Divider -->
+          <div class="h-6 w-px bg-slate-700"></div>
+
+          <!-- User profile -->
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+              AD
+            </div>
+            <div class="hidden sm:block">
+              <p class="text-xs font-semibold text-slate-200">Admin</p>
+              <p class="text-[10px] text-slate-500">DSS System</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
       <!-- Content Area -->
-      <div class="flex-1 overflow-auto p-6">
-        <div v-show="activeTab === 'dashboard'" class="fade-in">
-          <DashboardStats
-            :candidates="candidates"
-            :ranking-results="rankingResults"
-            :bobots="bobots"
-          />
-        </div>
-
-        <div v-show="activeTab === 'kandidat'" class="fade-in">
-          <KandidatView
-            :candidates="candidates"
-            :loading="loading"
-            @refresh="handleRefresh"
-          />
-        </div>
-
-        <div v-show="activeTab === 'ranking'" class="fade-in">
-          <RankingView
-            :results="rankingResults"
-            :loading="loading"
-            :calculating="calculating"
-            @calculate="handleCalculateRanking"
-          />
-        </div>
-      </div>
+      <main class="flex-1 overflow-y-auto bg-slate-900 p-6">
+        <transition name="page" mode="out-in">
+          <div v-if="activeTab === 'dashboard'" key="dashboard">
+            <DashboardStats
+              :candidates="candidates"
+              :ranking-results="rankingResults"
+              :bobots="bobots"
+            />
+          </div>
+          <div v-else-if="activeTab === 'kandidat'" key="kandidat">
+            <KandidatView
+              :candidates="candidates"
+              :loading="loading"
+              @refresh="handleRefresh"
+            />
+          </div>
+          <div v-else-if="activeTab === 'ranking'" key="ranking">
+            <RankingView
+              :results="rankingResults"
+              :loading="loading"
+              :calculating="calculating"
+              @calculate="handleCalculateRanking"
+            />
+          </div>
+        </transition>
+      </main>
     </div>
   </div>
 </template>
 
 <style scoped>
 .sidebar {
-  width: 280px;
-  background: #1e293b;
-  border-right: 1px solid #334155;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease;
-  z-index: 100;
+  position: relative;
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    transform: translateX(-100%);
-  }
-
-  .sidebar.sidebar-open {
-    transform: translateX(0);
-  }
-}
-
-.nav-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+/* Page transition */
+.page-enter-active,
+.page-leave-active {
   transition: all 0.2s ease;
-  text-align: left;
 }
 
-.nav-item:hover {
-  background: #334155;
-  color: #10b981;
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
 }
 
-.nav-item.active {
-  background: #334155;
-  color: #10b981;
-  border-left: 3px solid #10b981;
-  padding-left: 13px;
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
-.icon {
-  font-size: 18px;
+/* Fade slide for sidebar text */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.navbar {
-  background: #1e293b;
-  border-bottom: 1px solid #334155;
-  padding: 16px 24px;
-  height: 70px;
-  display: flex;
-  align-items: center;
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  max-width: 0;
 }
 
-.fade-in {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.fade-slide-enter-to,
+.fade-slide-leave-from {
+  opacity: 1;
+  max-width: 200px;
 }
 </style>
-

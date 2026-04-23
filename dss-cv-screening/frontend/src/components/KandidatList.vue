@@ -1,72 +1,120 @@
 <template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-bold text-slate-100">📋 Daftar Kandidat</h2>
-      <button @click="$emit('add')" class="btn-add">
-        ➕ Tambah Kandidat
+  <div class="bg-slate-800 rounded-xl border border-slate-700/60 overflow-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-700/60">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-bold text-slate-100">Daftar Kandidat</h2>
+        <span class="px-2 py-0.5 text-[11px] font-semibold bg-slate-700 text-slate-400 rounded-full">
+          {{ candidates.length }} kandidat
+        </span>
+      </div>
+      <button
+        @click="$emit('add')"
+        class="flex items-center gap-2 px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/20 active:translate-y-0"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Kandidat
       </button>
     </div>
 
-    <div v-if="loading" class="text-center py-12">
-      <div class="inline-block">
-        <div class="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full"></div>
+    <!-- Loading State -->
+    <div v-if="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-8 h-8 border-2 border-slate-700 border-t-emerald-500 rounded-full animate-spin"></div>
+      <p class="text-sm text-slate-500">Memuat data kandidat...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="candidates.length === 0" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="w-14 h-14 rounded-full bg-slate-700/50 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
       </div>
-      <p class="mt-4 text-slate-400">Memuat data...</p>
+      <div class="text-center">
+        <p class="text-sm font-medium text-slate-400">Belum ada kandidat</p>
+        <p class="text-xs text-slate-600 mt-1">Klik "Tambah Kandidat" untuk memulai</p>
+      </div>
     </div>
 
-    <div v-else-if="candidates.length === 0" class="text-center py-12 bg-slate-800/50 rounded-lg border border-slate-700">
-      <p class="text-slate-400">📭 Tidak ada data kandidat</p>
-      <p class="text-slate-500 text-sm mt-2">Klik tombol "Tambah Kandidat" untuk menambahkan kandidat baru</p>
-    </div>
-
+    <!-- Table -->
     <div v-else class="overflow-x-auto">
       <table class="w-full">
         <thead>
-          <tr class="border-b border-slate-700">
-            <th class="table-header">Nama</th>
-            <th class="table-header">Email</th>
-            <th class="table-header">Posisi</th>
-            <th class="table-header">Nilai Akhir</th>
-            <th class="table-header">Ranking</th>
-            <th class="table-header">Aksi</th>
+          <tr class="border-b border-slate-700/60 bg-slate-900/30">
+            <th class="th-cell">Nama</th>
+            <th class="th-cell">Email</th>
+            <th class="th-cell">Posisi</th>
+            <th class="th-cell text-center">Nilai Akhir</th>
+            <th class="th-cell text-center">Ranking</th>
+            <th class="th-cell text-right">Aksi</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-700/40">
           <tr
             v-for="candidate in candidates"
             :key="candidate.id"
-            class="border-b border-slate-700 hover:bg-slate-800/50 transition-colors"
+            class="hover:bg-slate-700/20 transition-colors duration-150 group"
           >
-            <td class="table-cell font-medium text-slate-100">{{ candidate.nama }}</td>
-            <td class="table-cell text-slate-400 text-sm">{{ candidate.email }}</td>
-            <td class="table-cell text-slate-300">{{ candidate.posisi_yang_dicari }}</td>
-            <td class="table-cell">
-              <span v-if="candidate.nilai_akhir" class="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-medium text-sm">
-                {{ (candidate.nilai_akhir * 100).toFixed(2) }}%
-              </span>
-              <span v-else class="text-slate-500">-</span>
+            <td class="td-cell">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center text-xs font-bold text-slate-400 shrink-0">
+                  {{ candidate.nama.charAt(0).toUpperCase() }}
+                </div>
+                <span class="text-sm font-medium text-slate-200">{{ candidate.nama }}</span>
+              </div>
             </td>
-            <td class="table-cell">
-              <span v-if="candidate.ranking" class="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 font-medium text-sm">
-                #{{ candidate.ranking }}
-              </span>
-              <span v-else class="text-slate-500">-</span>
+            <td class="td-cell">
+              <span class="text-sm text-slate-500">{{ candidate.email }}</span>
             </td>
-            <td class="table-cell">
-              <div class="flex gap-2">
+            <td class="td-cell">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-700/60 text-slate-300 border border-slate-600/50">
+                {{ candidate.posisi_yang_dicari }}
+              </span>
+            </td>
+            <td class="td-cell text-center">
+              <span
+                v-if="candidate.nilai_akhir"
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              >
+                {{ (candidate.nilai_akhir).toFixed(3) }}
+              </span>
+              <span v-else class="text-slate-600 text-xs">—</span>
+            </td>
+            <td class="td-cell text-center">
+              <span
+                v-if="candidate.ranking"
+                :class="[
+                  'inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold border',
+                  candidate.ranking === 1
+                    ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                    : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                ]"
+              >
+                {{ candidate.ranking }}
+              </span>
+              <span v-else class="text-slate-600 text-xs">—</span>
+            </td>
+            <td class="td-cell">
+              <div class="flex items-center justify-end gap-1.5">
                 <button
                   @click="$emit('edit', candidate)"
-                  class="btn-action edit"
+                  class="p-1.5 rounded-md text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-all duration-150"
                   title="Edit kandidat"
                 >
-                  ✏️
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </button>
                 <button
                   @click="$emit('delete', candidate.id)"
-                  class="btn-action delete"
+                  class="p-1.5 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-150"
                   title="Hapus kandidat"
                 >
-                  🗑️
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
                 </button>
               </div>
             </td>
@@ -78,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { Kandidat } from '../types';
+import type { Kandidat } from '../types';
 
 defineProps<{
   candidates: Kandidat[];
@@ -93,86 +141,21 @@ defineEmits<{
 </script>
 
 <style scoped>
-.btn-add {
-  padding: 10px 20px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+.th-cell {
+  padding: 11px 16px;
+  font-size: 11px;
   font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-add:hover {
-  background: #059669;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-table {
-  background: #1e293b;
-  border-radius: 8px;
-  border: 1px solid #334155;
-  border-collapse: collapse;
-  overflow: hidden;
-}
-
-thead {
-  background: #0f172a;
-}
-
-.table-header {
-  padding: 14px 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #cbd5e1;
-  font-size: 12px;
+  color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid #334155;
+  letter-spacing: 0.6px;
+  text-align: left;
+  white-space: nowrap;
 }
 
-.table-cell {
-  padding: 14px 16px;
-  color: #cbd5e1;
+.td-cell {
+  padding: 13px 16px;
   font-size: 14px;
-}
-
-.btn-action {
-  padding: 6px 10px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-}
-
-.btn-action.edit {
-  background: #3b82f6/20;
-  color: #3b82f6;
-}
-
-.btn-action.edit:hover {
-  background: #3b82f6/40;
-  transform: scale(1.05);
-}
-
-.btn-action.delete {
-  background: #ef4444/20;
-  color: #ef4444;
-}
-
-.btn-action.delete:hover {
-  background: #ef4444/40;
-  transform: scale(1.05);
+  color: #cbd5e1;
+  white-space: nowrap;
 }
 </style>

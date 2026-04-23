@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from 'axios';
-import { Kandidat, Bobot, RankingResult } from '../types';
+import axios from 'axios';
+import type { AxiosInstance } from 'axios';
+import type { Kandidat, Bobot, RankingResult } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 

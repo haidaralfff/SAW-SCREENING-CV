@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RankingTable from './RankingTable.vue';
-import { RankingResult } from '../types';
+import type { RankingResult } from '../types';
 
 interface Props {
   results: RankingResult[];
