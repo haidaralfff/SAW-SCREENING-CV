@@ -23,6 +23,7 @@ const props = defineProps<Props>();
 const chartData = computed(() => {
   const data = props.rankingResults.slice(0, 10);
   const maxVal = Math.max(...data.map(r => r.nilai_akhir));
+  
   return {
     labels: data.map(r => r.nama),
     datasets: [
