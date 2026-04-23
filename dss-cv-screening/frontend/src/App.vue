@@ -4,10 +4,12 @@ import apiService from './services/api';
 import DashboardStats from './components/DashboardStats.vue';
 import KandidatView from './components/KandidatView.vue';
 import RankingView from './components/RankingView.vue';
+import LoginView from './components/LoginView.vue';
 import type { Kandidat, RankingResult, Bobot } from './types';
 
 type ActiveTab = 'dashboard' | 'kandidat' | 'ranking';
 
+const isLoggedIn = ref(!!localStorage.getItem('access_token'));
 const activeTab = ref<ActiveTab>('dashboard');
 const candidates = ref<Kandidat[]>([]);
 const rankingResults = ref<RankingResult[]>([]);
@@ -17,10 +19,26 @@ const calculating = ref(false);
 const sidebarOpen = ref(true);
 
 onMounted(() => {
+  if (isLoggedIn.value) {
+    refreshAllData();
+  }
+});
+
+const handleLoginSuccess = () => {
+  isLoggedIn.value = true;
+  refreshAllData();
+};
+
+const handleLogout = () => {
+  apiService.logout();
+  isLoggedIn.value = false;
+};
+
+const refreshAllData = () => {
   loadKandidats();
   loadRanking();
   loadBobots();
-});
+};
 
 const loadKandidats = async () => {
   try {
@@ -104,7 +122,11 @@ const navItems = [
 </script>
 
 <template>
-  <div class="flex h-screen bg-slate-900 overflow-hidden">
+  <div v-if="!isLoggedIn">
+    <LoginView @login-success="handleLoginSuccess" />
+  </div>
+
+  <div v-else class="flex h-screen bg-slate-900 overflow-hidden">
 
     <!-- Sidebar -->
     <aside
@@ -159,11 +181,26 @@ const navItems = [
         </button>
       </nav>
 
+      <!-- Logout Button -->
+      <div class="px-2 py-4 border-t border-slate-700/60 mt-auto">
+        <button
+          @click="handleLogout"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-all duration-200 group"
+        >
+          <span class="shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </span>
+          <transition name="fade-slide">
+            <span v-if="sidebarOpen" class="whitespace-nowrap">Logout</span>
+          </transition>
+        </button>
+      </div>
+
       <!-- Footer -->
-      <div class="px-4 py-4 border-t border-slate-700/60">
-        <transition name="fade-slide">
-          <p v-if="sidebarOpen" class="text-[11px] text-slate-500 text-center">© 2026 DSS System</p>
-        </transition>
+      <div v-if="sidebarOpen" class="px-4 py-4 border-t border-slate-700/60 text-[11px] text-slate-500 text-center">
+        © 2026 DSS System
       </div>
     </aside>
 
@@ -207,11 +244,11 @@ const navItems = [
           <!-- User profile -->
           <div class="flex items-center gap-2.5">
             <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
-              AD
+              AU
             </div>
-            <div class="hidden sm:block">
-              <p class="text-xs font-semibold text-slate-200">Admin</p>
-              <p class="text-[10px] text-slate-500">DSS System</p>
+            <div class="hidden sm:block text-left">
+              <p class="text-xs font-semibold text-slate-200">Admin User</p>
+              <p class="text-[10px] text-slate-500">Authorized Session</p>
             </div>
           </div>
         </div>

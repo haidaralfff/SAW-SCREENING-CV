@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
 import { BobotService } from './bobot.service';
 import { CreateBobotDto, UpdateBobotDto } from './dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('bobot')
 export class BobotController {
   constructor(private readonly bobotService: BobotService) {}

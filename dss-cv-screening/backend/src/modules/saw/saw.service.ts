@@ -14,32 +14,54 @@ export class SawService {
   async calculateRanking() {
     // Get all candidates
     const kandidats = await this.prisma.kandidat.findMany();
+    if (!kandidats || kandidats.length === 0) {
+      return []; // No candidates to rank
+    }
     
-    // Get all bobots (criteria weights)
+    // Get all bobots (criteria weights and types)
     const bobots = await this.prisma.bobot.findMany();
     
-    // Create bobot map for easier access
+    // Create bobot maps for easier access
     const bobotMap = new Map(bobots.map(b => [b.nama_kriteria, b.bobot]));
+    const jenisMap = new Map(bobots.map(b => [b.nama_kriteria, b.jenis_kriteria]));
 
-    // Criteria names
-    const kriteria = ['pendidikan', 'pengalaman', 'skill_analisis', 'sertifikasi'];
+    // Helper to get max and min values safely
+    const getExtremes = (field: keyof typeof kandidats[0]) => {
+      const values = kandidats.map(k => Number(k[field]) || 0);
+      return {
+        max: Math.max(...values, 0.001), // Prevent division by zero
+        min: Math.min(...values),
+      };
+    };
 
-    // Step 1: Find max values for normalization
-    const maxValues = {
-      pendidikan: Math.max(...kandidats.map(k => k.pendidikan), 1),
-      pengalaman: Math.max(...kandidats.map(k => k.pengalaman), 1),
-      skill_analisis: Math.max(...kandidats.map(k => k.skill_analisis), 1),
-      sertifikasi: Math.max(...kandidats.map(k => k.sertifikasi), 1),
+    // Find min and max for each criterion
+    const extremes = {
+      pendidikan: getExtremes('pendidikan'),
+      pengalaman: getExtremes('pengalaman'),
+      skill_analisis: getExtremes('skill_analisis'),
+      sertifikasi: getExtremes('sertifikasi'),
+    };
+
+    // Helper for normalization
+    const normalize = (value: number, criterion: keyof typeof extremes) => {
+      const isBenefit = (jenisMap.get(criterion) || 'benefit') === 'benefit';
+      const max = extremes[criterion].max;
+      const min = extremes[criterion].min === 0 ? 0.001 : extremes[criterion].min; // safe min
+
+      if (isBenefit) {
+        return value / max;
+      } else {
+        return value === 0 ? 0 : min / value; // Cost formula
+      }
     };
 
     // Step 2: Normalize and calculate weighted score
     const hasil = kandidats.map(kandidat => {
-      // Normalize values (benefit criteria: value/max)
       const normalized = {
-        pendidikan: kandidat.pendidikan / maxValues.pendidikan,
-        pengalaman: kandidat.pengalaman / maxValues.pengalaman,
-        skill_analisis: kandidat.skill_analisis / maxValues.skill_analisis,
-        sertifikasi: kandidat.sertifikasi / maxValues.sertifikasi,
+        pendidikan: normalize(kandidat.pendidikan, 'pendidikan'),
+        pengalaman: normalize(kandidat.pengalaman, 'pengalaman'),
+        skill_analisis: normalize(kandidat.skill_analisis, 'skill_analisis'),
+        sertifikasi: normalize(kandidat.sertifikasi, 'sertifikasi'),
       };
 
       // Calculate weighted score
@@ -59,16 +81,18 @@ export class SawService {
     // Step 3: Sort by score (descending) and assign ranking
     hasil.sort((a, b) => b.nilai_akhir - a.nilai_akhir);
 
-    // Step 4: Update database with ranking and scores
-    for (let i = 0; i < hasil.length; i++) {
-      await this.prisma.kandidat.update({
-        where: { id: hasil[i].id },
+    // Step 4: Update database with ranking and scores using Transaction
+    const updates = hasil.map((h, i) => 
+      this.prisma.kandidat.update({
+        where: { id: h.id },
         data: {
-          nilai_akhir: hasil[i].nilai_akhir,
+          nilai_akhir: h.nilai_akhir,
           ranking: i + 1,
         },
-      });
-    }
+      })
+    );
+
+    await this.prisma.$transaction(updates);
 
     return hasil;
   }

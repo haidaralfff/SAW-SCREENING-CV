@@ -14,6 +14,33 @@ class ApiService {
         'Content-Type': 'application/json',
       },
     });
+
+    // Add interceptor for JWT
+    this.api.interceptors.request.use((config) => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+  }
+
+  // Auth endpoints
+  async login(username: string, password: string): Promise<{ access_token: string }> {
+    const response = await this.api.post('/auth/login', { username, password });
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token);
+    }
+    return response.data;
+  }
+
+  async register(username: string, password: string): Promise<any> {
+    const response = await this.api.post('/auth/register', { username, password });
+    return response.data;
+  }
+
+  logout() {
+    localStorage.removeItem('access_token');
   }
 
   // Kandidat endpoints

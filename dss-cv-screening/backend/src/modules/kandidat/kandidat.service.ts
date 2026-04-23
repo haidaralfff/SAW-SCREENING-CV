@@ -1,15 +1,25 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateKandidatDto, UpdateKandidatDto } from './dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class KandidatService {
   constructor(private prisma: PrismaService) {}
 
   async create(createKandidatDto: CreateKandidatDto) {
-    return this.prisma.kandidat.create({
-      data: createKandidatDto,
-    });
+    try {
+      return await this.prisma.kandidat.create({
+        data: createKandidatDto,
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new ConflictException('Email kandidat sudah terdaftar!');
+        }
+      }
+      throw new InternalServerErrorException('Gagal menambahkan kandidat ke database');
+    }
   }
 
   async findAll() {
